@@ -6,7 +6,7 @@ tags: [function,array]
 cover: generator
 excerpt: Learn how to use JavaScript ES6 generators to create a range generator that produces a sequence of numbers.
 listed: true
-dateModified: 2024-07-30
+dateModified: 2026-10-24
 ---
 
 [JavaScript ES6 generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) allow you to define **functions that can be exited and later re-entered**, while **retaining their context** (variable bindings). They are defined using `function*` (`function` keyword followed by an asterisk) and use `yield` expressions to return their result. But how can one use them to create a range generator that produces a sequence of numbers?
@@ -71,13 +71,19 @@ In order to match the behavior of Python's `range()` function, we need to accoun
 2. If **two arguments** are provided, they should be treated as `start` and `end`, with `step` defaulting to `1`.
 3. If **three arguments** are provided, they should be treated as `start`, `end`, and `step`.
 
+For a **negative step**, continue while the current value is greater than `end`. Keep `end` excluded in both directions. Reject a **zero step**, which would prevent the loop from advancing.
+
 ```js
 const range = function* (start, end, step = 1) {
   if (end === undefined) (end = start), (start = 0);
-  for (let i = start; i < end; i += step) yield i;
+  if (step === 0) throw new RangeError('Step must not be zero');
+  for (let i = start; step > 0 ? i < end : i > end; i += step) yield i;
 };
 
 [...range(4)];        // [0, 1, 2, 3] (scenario 1)
 [...range(6, 10)];    // [6, 7, 8, 9] (scenario 2)
 [...range(2, 10, 2)]; // [2, 4, 6, 8] (scenario 3)
+[...range(5, 0, -2)]; // [5, 3, 1]
+[...range(0, 5, -1)]; // []
+[...range(0, 5, 0)];  // Throws RangeError
 ```
